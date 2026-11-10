@@ -1,0 +1,200 @@
+<!-- Generated from the Obsidian vault (Machine/Research). Edit the vault note, not this file: mirror_research.py overwrites it. -->
+
+# Quantization KL experiment 001: gemma-4-12b-it on the RTX 3080
+
+> **TL;DR:** Pre-registration of the first measured quant test here: eleven gemma-4-12b-it quants and two KV settings scored by KL against Q8_0 on wiki, chat and code text; thresholds fixed in advance.
+> **Source:** Owner request 2026-11-04: run the KL test on gemma4:12b quants. Pre-registered before any result was read.  ·  **Project:** evolve-lab  ·  **Updated:** 2026-11-04
+
+Scripts: `experiments/kl_gemma4_12b.sh`, `experiments/prep_eval_data.py`, `experiments/kl_report.py` (this folder). Working directory on disk: `/mnt/ai-storage/quant-eval/gemma-4-12b-it/`. Model files: `/mnt/ai-storage/models/gguf/gemma-4-12b-it/`.
+
+## Question
+
+Which quantization of the default local worker (`gemma4:12b`, Ollama's Q4_K_M) is the best trade between size and fidelity on this card, and does an importance matrix, Unsloth's dynamic mix, the QAT checkpoint, or an 8-bit KV cache change the answer?
+
+## Design (fixed before running)
+
+**Reference.** Q8_0 made here from Unsloth's BF16 GGUF (`unsloth/gemma-4-12b-it-GGUF`, 22.2 GiB). BF16 does not fit 10 GB of VRAM or 16 GB of RAM, so Q8_0 is the teacher; its own error against BF16 is about 0.001 KL on comparable models and is a floor every candidate shares.
+
+**Candidates.**
+
+| Name | Made how | Why it is in |
+|---|---|---|
+| Q6_K, Q5_K_M, Q4_K_M, Q3_K_M | `llama-quantize` from BF16, no imatrix | The standard ladder |
+| Q4_K_M-imat, IQ4_XS-imat, Q3_K_M-imat, IQ3_M-imat | Same, with an imatrix built here from Q8_0 over `calib.txt` | Does calibration help, and by how much, per level |
+| UD-Q4_K_XL | Downloaded, Unsloth Dynamic 2.0 | The vendor's per-layer mix |
+| QAT-UD-Q4_K_XL | Downloaded, Unsloth's quant of Google's QAT checkpoint | Caveat below |
+| ollama-Q4_K_M | The blob Ollama installed for `gemma4:12b` | What runs today |
+
+**KV cache arm.** Q4_K_M-imat with flash attention and K/V at `q8_0`, and at `q4_0`, against its own default run.
+
+**Eval text (`eval.txt`, about 26k tokens).** Three slices, none used for calibration: wikitext-2 test (40k chars), 150 ultrachat test conversations rendered as plain `User:`/`Assistant:` transcripts (40k chars), Python from llama.cpp's `gguf-py` (25k chars). Context 2048 for every run.
+
+**Calibration text (`calib.txt`, about 60k tokens).** wikitext-2 train (offset so it does not overlap the test split), ultrachat test rows 2000 to 2599, C and C++ from llama.cpp `examples/`. Disjoint from the eval slices by construction.
+
+**Metrics** from `llama-perplexity --kl-divergence`: mean KLD (with its standard error), median KLD, 99th percentile KLD, "same top p" (top-1 agreement), perplexity. Mean KLD and top-1 agreement decide; the others explain.
+
+**Thresholds (from the literature before measuring).** Mean KLD at or below 0.02 and top-1 agreement at or above 95% is "safe"; 0.02 to 0.05 is "marginal, chat only"; above 0.05 is "damaged". Basis: Q4_K_M medians of 0.0075 (Mistral-7B, S19), Q4 means of 0.014 to 0.019 on Qwen3.5-27B (S94, S95), and the llama.cpp discussion that deviations above about 0.1 are plainly noticeable (S90). Differences between two candidates smaller than twice the larger standard error are ties.
+
+**Hypotheses.**
+1. Q6_K and Q5_K_M land under 0.01; Q4_K_M between 0.01 and 0.03; Q3_K_M above 0.05.
+2. The imatrix cuts mean KLD by at least 10% at Q4_K_M and at least 25% at Q3_K_M (S20 claims 10 to 30% in perplexity terms).
+3. UD-Q4_K_XL is within 10% of Q4_K_M-imat at a similar size (S94 found uploaders within 6% of each other at the same type).
+4. ollama-Q4_K_M matches the no-imatrix Q4_K_M, because Ollama's conversion does not use one (assumption, to be checked against the result).
+5. KV at q8_0 adds under 0.002 mean KLD; q4_0 adds more than 0.005.
+
+**Caveat on the QAT candidate.** It is a different set of weights (Google fine-tuned them under fake quantization), so KL against the non-QAT reference measures distance from the original model, not quality. A low number still means "close to the original"; a high number does not mean "worse". Task accuracy is the right test for it, which this experiment does not do.
+
+**Decision rule.** The default `gemma4:12b` should move to the smallest candidate that is "safe" on this mix if that candidate beats the installed blob by more than two standard errors. Changing the Ollama model is the owner's call; this note only recommends.
+
+**Other limits.** Teacher-forced scoring on text is not generation; chat is rendered without Gemma's template; the Ollama blob may differ in metadata from Unsloth's conversion; 26k tokens cannot resolve differences below about 0.001; the thinking mode is not exercised.
+
+## Amendment 1 (2026-11-04 21:40, before any KL result was read)
+
+**Observation during the run.** Sanity perplexities on the eval slices with two known-good 4-bit files (Unsloth UD-Q4_K_XL and the Ollama blob): wiki slice 751 and 626, plain chat transcripts 48, code 15. A control model (qwen2.5-coder 7B) scores 9.1 on the same wiki slice. GGUF metadata is sane (BOS added, final logit softcapping 30, sliding-window pattern present), a 512-token context changes nothing (600), and greedy generation is coherent. Formatting the chat slice in Gemma's own turn template lowers it from 48 to 30. Reading: the model runs correctly; a heavily post-trained thinking model is simply far from raw Wikipedia text, so the wiki slice would contribute huge, noisy per-token KL values and dominate the mixed-text mean.
+
+**Change.** Run A (the pre-registered mixed text) completes and is reported as planned. Run B (`experiments/kl_slices.sh`) adds per-slice KL on three files: the chat slice in Gemma's template, the code slice, and the wiki slice, each with its own Q8_0 reference. The decision rule now reads: the "safe" thresholds apply to the chat-template and code slices; the wiki slice is reported as a stress domain and does not decide. Hypotheses and thresholds are otherwise unchanged.
+
+**Why this is allowed.** No KL number had been produced or read when the amendment was written; only perplexity sanity checks were.
+
+## Amendment 2 (2026-11-04 21:55, after run A, before any run B result)
+
+**Run A result (mixed text, as pre-registered).** Not decision-grade. Mean KLD: Q6_K 0.50, Q5_K_M 0.74, UD-Q4_K_XL 0.77, installed Ollama Q4_K_M 0.83, Q4_K_M-imat 0.88, Q4_K_M plain 1.40, Q3_K_M-imat 1.58, IQ3_M-imat 1.62, Q3_K_M plain 2.39, QAT-UD-Q4_K_XL 2.95 (a different model, as the caveat said). Top-1 agreement 81% down to 49%. Full table in `results/REPORT.md` on the NVMe. These values are two orders of magnitude above what Q6_K costs on normal text, which prompted the checks below.
+
+**Diagnostics.**
+1. Q8_0 scored against its own reference at the same GPU split: KL 0.000, top-1 99.99% (the pipeline is sound).
+2. Q8_0 scored against its own reference with a different split (20 instead of 30 layers on the GPU): mean KL 0.034, median 0.0027, top-1 95.1%. The CPU and CUDA paths disagree enough on this model to flip one top token in twenty on this text. Any run must therefore use the same split as the reference.
+3. Q4_K_M-imat at the reference split: 0.865, unchanged. So run A's spread is real for this text, and the text is the problem: a model with perplexity 700 on a slice has nearly flat distributions there, and flat distributions make KL and top-1 agreement measure noise.
+
+**Changes.** (a) Run B scores every candidate and the KV arm at the reference split (30 layers). (b) Run C adds a fourth slice, `slice-self.txt`: 40 ultrachat questions (rows 5000 onward, disjoint from everything else) answered by the installed `gemma4:12b` with thinking off at temperature 0, written in Gemma's turn template. Scoring quants on the model's own answers measures drift where the model is confident, which is the regime the agents run in. (c) The decision rule applies to the self-generated and chat-template slices first, code second; wiki is a stress domain only. Thresholds unchanged, with the 0.034 split-noise result noted as the floor to beat.
+
+## Amendment 3 (2026-11-04 22:15): the CUDA flash-attention path is numerically wrong for gemma4
+
+**Run B result (per slice, reference split everywhere).** Still oversized: chat-template slice Q6_K mean 0.31 (median 0.025, top-1 84.5%), UD-Q4_K_XL 0.56, Q5_K_M 0.73, installed Ollama blob 0.85, Q4_K_M-imat 0.85, plain Q4_K_M 1.00, Q3 class 1.1 to 1.5. Code slice: medians are normal (Q6_K 0.002, Q4_K_M-imat 0.007, Q4_K_M plain 0.037) but means are 0.48 to 1.8 because 1 to 2% of tokens have KL above 10. Tables in `results-chat-template/`, `results-code/`, `results-wiki/` on the NVMe.
+
+**Control (Qwen2.5-3B-Instruct, BF16 reference, full GPU offload, code slice).** Q8_0 0.0011, Q6_K 0.0037, Q4_K_M 0.030; maximum KL 1.2; a different offload split changes Q8_0 by 0.0000. Textbook. The pipeline is sound.
+
+**Gemma 4, same Q8_0 weights, code slice, against a CPU-only reference (`-ngl 0 -fa off`).**
+
+| Run | Mean KLD | Max KLD | 99% KLD | Top-1 agreement |
+|---|---|---|---|---|
+| CPU again | 0.000 | 0.00005 | 0.00003 | 100.0% |
+| GPU 30 layers, flash attention off | 0.023 | 4.9 | 0.38 | 96.3% |
+| GPU 30 layers, flash attention on | 0.222 | 21.0 | 5.3 | 92.3% |
+
+Flash attention on versus off on the GPU, same weights: 0.224, max 33.7. The CPU path is deterministic and the control model shows GPU and CPU agreeing to 0.001, so the CUDA flash-attention kernels (and to a lesser degree the non-FA CUDA path) are producing wrong logits for Gemma 4 at a small fraction of positions, badly enough to flip the top token one time in thirteen. llama.cpp's tracker has Gemma 4 crash reports under flash attention (#21336, #24400) with a theory about batching sliding-window and global layers; no numerical report was found. Build: commit 3de52ac of 2026-11-04.
+
+**Consequences.** (1) Every KL number in runs A and B measures kernel error plus quantization, not quantization. (2) Ollama runs `gemma4:12b` with flash attention enabled (its runner log says so), on the same ggml CUDA kernels, so the production worker is likely affected; whether it costs task accuracy is unmeasured and is the first thing to test. (3) Run D scores the eight main candidates on the CPU path only (`experiments/kl_cpu.sh`), on the model's own answers (`slice-self.txt`, 40 ultrachat questions answered by the installed model, thinking off, temperature 0, about 23k tokens) and the code slice. Thresholds unchanged for run D.
+
+## Amendment 4 (2026-11-04 22:55): task-level check, template error, and determinism
+
+**Flash attention does not reach task accuracy here.** The installed `gemma4:12b` scored through evolve-lab's `loop.evaluate` (seed prompt, JSON schema, temperature 0, train split; holdout untouched), once on a throwaway Ollama instance on port 11435 started with `OLLAMA_FLASH_ATTENTION=0`, once on the production server (flash attention on):
+
+| Task | FA off | FA on | Items that changed | Seconds per item (off / on) |
+|---|---|---|---|---|
+| ticker-extract-v2 (150 items) | 0.758 | 0.753 | 5 of 150 | 4.8 / 2.8 |
+| code-repair-choice-v1 (6 train items) | 1.000 | 1.000 | 0 of 6 | 2.4 / 1.1 |
+
+One extraction item is 0.0067 of the score, so the difference is noise. Reading: the per-token KL spikes are real but, on a short JSON extraction task at temperature 0, they rarely change the chosen answer. Flash attention stays on; it is 1.7× faster. No service change recommended on this evidence.
+
+**The chat-formatted slices were malformed.** Gemma 4's template (read from the GGUF, 18,922 characters) uses `<|turn>user`, `<turn|>`, `<|turn>model` and a `<|channel>thought ... <channel|>` thinking block; `<start_of_turn>` is Gemma 2/3 syntax and does not exist here. Separately, `llama-perplexity` tokenizes its input with `parse_special=false`, so any marker in the text is scored as literal characters anyway. That is why the Q8_0 reference scored perplexity 22 on the model's own answers. The chat-template and self slices are therefore not in-distribution tests and are set aside; the code and wiki slices (plain text) are unaffected.
+
+**The CPU path is exactly deterministic**, for Gemma 4 and for the Qwen control: changing the thread count (summation order) gives KL 0.000 and maximum 0.00005 on both. So Gemma 4's large Q6_K-vs-Q8_0 tail on the CPU path (code slice: mean 0.48, median 0.002, 99th percentile 10.8) is a genuine sensitivity of the computation to weight perturbation, not noise. Whether it is the model or llama.cpp's implementation of it is the remaining question; an independent transformers (bitsandbytes NF4) reference on the same code slice is being run to answer it.
+
+**Run D (CPU path, code slice)** is finishing; its table replaces run B's as the quantization ranking.
+
+## Independent reference (2026-11-04 23:10): transformers agrees with llama.cpp
+
+To test whether llama.cpp's Gemma 4 implementation is wrong, the same code slice was scored in transformers 5.20 with bitsandbytes NF4 (the only precision of a 12B that fits 10 GB), 256-token windows, second half of each window scored, the same windowing llama.cpp uses.
+
+| Model | llama.cpp (CPU, Q8_0 or BF16) | transformers NF4 |
+|---|---|---|
+| Qwen2.5-3B-Instruct | 3.14 | 3.20 |
+| gemma-4-12b-it | 15.53 | 16.39 |
+
+The two implementations agree within 6% on both models. So llama.cpp's forward pass for Gemma 4 is not broken: Gemma 4 12B-it genuinely assigns perplexity about 16 to ordinary Python (and about 700 to Wikipedia text), five times a 3B Qwen on the same text. A heavily post-trained thinking model is simply far from raw text, and in that regime its output distribution is flat and twitchy, which is what the large KL tails under any perturbation (quantization, flash attention, CPU-versus-GPU) are measuring. The remaining implementation-level fact is that llama.cpp's own CUDA flash-attention path differs from its CPU path by 0.22 mean KL on this model, which no task score has yet shown to matter.
+
+**What this does to the experiment's logic.** KL on raw text cannot rank Gemma 4 quants against the pre-registered thresholds; those thresholds came from models that are not this far out of distribution. The usable readings are (1) the median KL, which reflects the typical token and is in the normal range (code slice: Q6_K 0.002, Q4_K_M-imat 0.007, plain Q4_K_M 0.037), (2) the relative order of candidates, which is consistent across slices and paths, and (3) task accuracy, which is the arbiter. A clean in-distribution KL test needs run E: the model's own answers through its real `<|turn>` template, scored by a `llama-perplexity` built with special-token parsing on, on the CPU path.
+
+## Amendment 5 (2026-11-04 23:45): the in-distribution slice, finally correct
+
+Rendering the model's own answers through the HF tokenizer's `apply_chat_template` still scored perplexity 15.8 (run E, discarded). The reason, read from the template: with thinking disabled, the generation prompt is `<|turn>model\n<|channel>thought\n<channel|>`, an empty thinking block, and the answer follows it; rendering a finished assistant turn omits that block, so the scored context differed from the generating context. `slice-self3.txt` renders each exchange as `<|turn>user\n{q}<turn|>\n<|turn>model\n<|channel>thought\n<channel|>{a}<turn|>\n`. Check: the Q8_0 reference scores it at perplexity 2.73 on the first two chunks (the question tokens are the model's only surprise). The turn markers tokenize to the single ids 105 and 106 with the stock tokenizer, so the perplexity patch was not needed for them.
+
+**Run F.** Five key candidates (Q6_K, UD-Q4_K_XL, Q4_K_M-imat, installed Ollama Q4_K_M, plain Q4_K_M) on `slice-self3` on the deterministic path (fully on the CPU, `-dev none`, flash attention off; corrected 2026-11-05, see the path check under Results), under the GPU lock so it ends before the night shift; then the code slice for all nine candidates entirely on the CPU overnight (`-dev none`, 6 threads). The remaining candidates on the own-answers slice ran on the same path on 2026-11-05 against the same reference file. Paths are not mixed within a slice.
+
+## Status
+
+- 2026-11-04 19:55: scripts written; downloads of BF16, UD-Q4_K_XL and QAT-UD-Q4_K_XL started; eval and calibration parquet files started.
+- 2026-11-04 20:45: the owner gave blanket permission; the clone passed as a separate command and the CUDA build finished at 21:08 (llama.cpp commit 3de52ac, 2026-11-04). Draft (MTP Q8_0, 444 MiB) and projector (mmproj-F16, 167 MiB) downloaded for the later Ollama import.
+- 2026-11-04 21:10: full run started (`kl_gemma4_12b.sh all`, log in the session scratchpad; results land in `/mnt/ai-storage/quant-eval/gemma-4-12b-it/results/`).
+- The build command, kept for reproducibility:
+
+```
+cd /mnt/ai-storage/tools && git clone --depth 1 https://github.com/ggml-org/llama.cpp llama.cpp-main && cd llama.cpp-main && cmake -B build -DGGML_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=86 -DLLAMA_CURL=OFF -DGGML_NATIVE=ON && cmake --build build --config Release -j 10 --target llama-quantize llama-perplexity llama-imatrix llama-cli
+```
+
+- The runner: `bash "<this folder>/experiments/kl_gemma4_12b.sh" all` (takes the GPU lock; about 1 to 2 hours, most of it quantizing and the Q8_0 reference pass).
+- 21:41 run A done; 21:47 to 22:05 run B (per slice, `kl_slices.sh`); 22:12 to 22:46 run D self slice on the CPU path (`kl_cpu.sh`); 22:13 to 22:47 flash-attention A/B on the real tasks; 22:50 to 23:10 Qwen control and transformers cross-check; 23:13 run E started: the model's own answers rendered through the real template (`slice-self2.txt`, 20k tokens) on the deterministic path under the GPU lock, then the code slice fully on the CPU (chained, slow, overlaps the night shift without touching the GPU).
+- Run folders on the NVMe: `results/` (A), `results-chat-template/`, `results-code/`, `results-wiki/` (B), `results-cpu-self/` (D, malformed slice, kept for the record), `results-cpu-self2/` (E), `results-cpu-code/` (E, second stage). Each has a `REPORT.md`.
+
+## Results (own-answers slice complete 2026-11-05 15:41)
+
+### In distribution: the model's own answers, real template, deterministic path (run F)
+
+Reference Q8_0 perplexity 4.49 (the question tokens are the only surprise).
+
+| Quant | GiB | Mean KLD | Median KLD | 99% KLD | Top-1 agreement |
+|---|---|---|---|---|---|
+| Q6_K | 9.11 | 0.032 ± 0.002 | 0.0036 | 0.40 | 94.8% |
+| Q5_K_M | 7.96 | 0.062 ± 0.003 | 0.0073 | 0.80 | 92.7% |
+| installed Ollama Q4_K_M | 6.87 | 0.070 ± 0.003 | 0.0081 | 0.91 | 91.9% |
+| UD-Q4_K_XL | 6.86 | 0.074 ± 0.003 | 0.0077 | 0.97 | 91.7% |
+| Q4_K_M-imat | 6.87 | 0.076 ± 0.003 | 0.0080 | 1.02 | 91.8% |
+| IQ4_XS-imat | 6.18 | 0.110 ± 0.004 | 0.0125 | 1.35 | 90.1% |
+| QAT-UD-Q4_K_XL (different weights) | 6.26 | 0.134 ± 0.005 | 0.0186 | 1.81 | 89.8% |
+| Q4_K_M (no imatrix) | 6.87 | 0.177 ± 0.005 | 0.0277 | 1.93 | 87.1% |
+| Q3_K_M-imat | 5.67 | 0.213 ± 0.006 | 0.0336 | 2.43 | 86.1% |
+
+Path check (2026-11-05): the seven new rows ran on the same path as the reference, fully on the CPU (`-dev none`, flash attention off). A first daytime pass with GPU-assisted matmuls (layers still on the CPU) gave different numbers (Q6_K 0.022 instead of 0.032) and was set aside in `results-cpu-self3-gpuassist/`; re-running Q6_K CPU-only reproduced 0.032202 exactly, and UD-Q4_K_XL re-ran to the identical 0.074041. So "layers on the CPU, GPU-assisted matmul" above was a mislabel: run F was CPU-only.
+
+Control, Qwen2.5-3B on code (BF16 reference): Q8_0 0.0011, Q6_K 0.0037, Q4_K_M 0.030 mean KLD; top-1 98.5%, 97.5%, 94.2%.
+
+### Code slice, all candidates, GPU flash-attention path at the reference split (run B)
+
+| Quant | GiB | Mean KLD | Median KLD |
+|---|---|---|---|
+| Q6_K | 9.11 | 0.48 | 0.0020 |
+| UD-Q4_K_XL | 6.86 | 0.78 | 0.0055 |
+| Q5_K_M | 7.96 | 0.81 | 0.0049 |
+| Q4_K_M-imat | 6.87 | 0.83 | 0.0074 |
+| Q4_K_M-imat, KV q8_0 | 6.87 | 0.87 | 0.0081 |
+| installed Ollama Q4_K_M | 6.87 | 0.89 | 0.0073 |
+| IQ4_XS-imat | 6.18 | 0.93 | 0.0078 |
+| Q4_K_M-imat, KV q4_0 | 6.87 | 1.05 | 0.0128 |
+| Q4_K_M (no imatrix) | 6.87 | 1.31 | 0.037 |
+| Q3_K_M-imat | 5.67 | 1.34 | 0.079 |
+| IQ3_M-imat | 5.34 | 1.38 | 0.027 |
+| Q3_K_M (no imatrix) | 5.67 | 1.76 | 0.21 |
+| QAT-UD-Q4_K_XL (different weights) | 6.26 | 2.45 | 0.32 |
+
+The means on this path carry the flash-attention tail (Amendment 3) and are only good for ordering; the medians are the per-token story. The same order appears on the chat-template, wiki and run D slices.
+
+### Hypotheses
+
+1. *Q6_K and Q5_K_M under 0.01, Q4_K_M 0.01 to 0.03, Q3_K_M above 0.05 (mean).* Not met in mean terms for this model: even Q6_K is 0.032 in distribution. Met in median terms (Q6_K 0.0036, Q5_K_M 0.0049 on code). The thresholds were calibrated on models that are not this far out of distribution; see the Independent reference section.
+2. *The imatrix cuts KL by at least 10% at Q4_K_M and 25% at Q3_K_M.* Confirmed, strongly: Q4_K_M plain versus imatrix 1.31 versus 0.83 mean (37% lower) and 0.037 versus 0.0074 median (80% lower); Q3_K_M 1.76 versus 1.34 (24%) and 0.21 versus 0.079 (62%).
+3. *UD-Q4_K_XL within 10% of Q4_K_M-imat.* It is 6% better on code at the same size; in distribution the two tie (0.074 versus 0.076 mean, within twice the standard error).
+4. *The installed Ollama blob matches a no-imatrix Q4_K_M.* Rejected: it behaves like an imatrix quant (0.89 versus 1.31 mean, 0.0073 versus 0.037 median). Whatever Ollama's recipe is, it is not plain rounding.
+5. *KV q8_0 adds under 0.002, q4_0 more than 0.005.* On the flash-attention path: q8_0 adds 0.04 mean and 0.0007 median; q4_0 adds 0.22 mean and 0.0054 median. q8_0 is acceptable, q4_0 is not; to be re-measured on the deterministic path.
+
+### Decision
+
+**2026-11-05, own-answers slice complete: no change to `gemma4:12b`.** Read with the pre-registered tie rule (a difference under twice the larger standard error is a tie): the installed Ollama blob (0.070), UD-Q4_K_XL (0.074) and Q4_K_M-imat (0.076) are tied, so no 4-bit file beats what is installed. Q5_K_M (0.062) is genuinely better than the blob, and Q6_K (0.032) clearly so, but no candidate reaches the pre-registered "safe" bar (0.02 mean, 95% top-1), so the decision rule does not fire. The open question is only whether Q5_K_M's 1.1 GB extra (or Q6_K, which leaves no room for context) buys task accuracy; that is a task-level check with the quant-eval bundle and the owner's call, not a KL question.
+
+Earlier (2026-11-05 00:25): no change to `gemma4:12b` that night. The decision rule needed the installed blob and UD-Q4_K_XL on the same in-distribution slice and then a task-level check with the quant-eval bundle. What the data already says: Q6_K is the best quant but at 9.1 GB leaves no room for context on this card; Q5_K_M at 8.0 GB is marginal; among the files that fit, UD-Q4_K_XL is the best measured so far and the installed blob is close behind it; plain (no-imatrix) quants and anything at 3 bits should not be used for this model.
+
+### Also learned
+
+- llama.cpp's CUDA flash-attention path diverges from its CPU path for Gemma 4 (0.22 mean KL on identical Q8_0 weights) without changing the extraction task's score; filed as an open question for upstream.
+- Gemma 4's hypersensitivity is real and model-level (transformers agrees on perplexity; the CPU path is deterministic): a quant level that is "safe" for Qwen or Llama by KL is one level too aggressive for Gemma 4.
+- Build: llama.cpp 3de52ac (2026-11-04) with a one-line local patch in `tools/perplexity/perplexity.cpp` (parse special tokens); the patch did not affect any number above.
+
