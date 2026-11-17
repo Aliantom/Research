@@ -3,7 +3,7 @@
 # Sources
 
 > **TL;DR:** Sources for local agent evaluation: Anthropic evals guidance, a holdout reuse paper, and a 2026-10-24 Gemma and Qwen sampler audit.
-> **Source:** Primary research consulted for local agent workflow experiments  ·  **Project:** AI workstation  ·  **Updated:** 2026-10-27
+> **Source:** Primary research consulted for local agent workflow experiments  ·  **Project:** AI workstation  ·  **Updated:** 2026-11-16
 
 - [Anthropic: Demystifying evals for AI agents, January 9, 2026](https://www.anthropic.com/research/demystifying-evals-for-ai-agents). Distinguishes tasks, repeated trials, transcripts and real outcomes; recommends checking graders and inspecting traces. Application to this lab: deterministic outcome checks and successful tool retrieval, rather than self-reported success.
 - [Dwork et al.: Generalization in Adaptive Data Analysis and Holdout Reuse, 2015](https://arxiv.org/abs/1506.02629). Explains how adaptive reuse can overfit a holdout. This lab uses one-shot reservations and fresh banks; it does not implement the paper's formal differential-privacy algorithm or claim its guarantees.

@@ -104,6 +104,10 @@ Research notes, one folder per topic. Each line below is a note and its one-line
 - [Outreach compliance for site-foundry (DC, Maryland, Virginia)](site-foundry/2026-11-02-outreach-compliance.md): Manual cold email works with CAN-SPAM fixes and a suppression list; cold calls need DNC scrubbing and Virginia rules; skip cold SMS; Google Places terms bar storing its data. Not legal advice.
 - [Reaching no-website, no-email leads without phone calls](site-foundry/2026-11-03-reaching-no-website-leads-without-phone.md): Best no-phone route for the 13 phone-only Annapolis leads: a personalized first-class postcard with a per-lead QR link (about $12 for 13) plus a walk-in; no channel has solid response-rate data.
 
+## structured-extraction
+
+- [Reliable JSON extraction from small local models](structured-extraction/2026-11-16-reliable-json-extraction-from-small-local-models.md): Constrained decoding fixes JSON validity but can cost accuracy on small models; best-supported recipe: free-text answer first, then a constrained packaging call, schema in prompt, validator, one retry
+
 ## trading
 
 - [Trading methods ranked for a $1.2k AI/semis account](trading/00-index.md): No method in the 27-card library has proven edge at $1.2k; best bets are AI/semis rotation and trend/regime overlays (both bias-prone); premium selling, LEAPS, pairs and the wheel fail.

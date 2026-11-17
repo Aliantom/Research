@@ -3,7 +3,7 @@
 # Tasking and integration sources
 
 > **TL;DR:** Adopt task briefs, cited read-only MCP results and lexical vault retrieval before adding any new interface or agent framework.
-> **Source:** 2026-10-24 parallel investigation of practical local AI workflow improvements  ·  **Project:** AI workstation  ·  **Updated:** 2026-10-27
+> **Source:** 2026-10-24 parallel investigation of practical local AI workflow improvements  ·  **Project:** AI workstation  ·  **Updated:** 2026-11-16
 
 Research checked 2026-10-24. Seven primary documentation pages support the facts below. Rankings, proposed checks, and hardware priorities are recommendations, not measured findings. No software was installed, configuration changed, inference run, or vault material uploaded. System details supplied by the coordinating agent: Ubuntu, RTX 3080 10 GB, 16 GB RAM, 2 TB NVMe, Ollama 0.40.10, existing CLI clients and four read-only STDIO MCP tools. Documentation describes current releases; exact behavior on installed versions remains to be checked locally.
 

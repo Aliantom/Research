@@ -3,7 +3,7 @@
 # Blueprint: make the suite improve through measured local work
 
 > **TL;DR:** Recommends building on evolve-lab with a DGM, GEPA and ACE splice and a frozen scorer, defaulting to a 4-bit 8-12B local model on the 3080.
-> **Source:** Synthesis of the resumed 2026-10-24 self-improving AI research and the independent hardware assessment  ·  **Project:** evolve-lab  ·  **Updated:** 2026-10-27
+> **Source:** Synthesis of the resumed 2026-10-24 self-improving AI research and the independent hardware assessment  ·  **Project:** evolve-lab  ·  **Updated:** 2026-11-16
 
 ## Decision
 

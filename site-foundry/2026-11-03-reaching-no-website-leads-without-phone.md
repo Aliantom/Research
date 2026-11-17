@@ -3,7 +3,7 @@
 # Reaching no-website, no-email leads without phone calls
 
 > **TL;DR:** Best no-phone route for the 13 phone-only Annapolis leads: a personalized first-class postcard with a per-lead QR link (about $12 for 13) plus a walk-in; no channel has solid response-rate data.
-> **Source:** Owner request 2026-11-03 (approved run): how can a solo MD web designer legally reach no-website, no-email local businesses without phone calls  ·  **Project:** site-foundry  ·  **Updated:** 2026-11-03
+> **Source:** Owner request 2026-11-03 (approved run): how can a solo MD web designer legally reach no-website, no-email local businesses without phone calls  ·  **Project:** site-foundry  ·  **Updated:** 2026-11-16
 
 Date: 2026-11-03. Evidence labels: VERIFIED (read the page this session), REASONED (follows from verified facts), ASSUMED (not checked). Not legal advice; the owner should read the statute pages linked below before the first send.
 

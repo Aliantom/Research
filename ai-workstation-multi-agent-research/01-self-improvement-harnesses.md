@@ -3,7 +3,7 @@
 # Recursive Self-Improvement for AI Agents Without Retraining (Prompting/Scaffolding/Orchestration-Based)
 
 > **TL;DR:** Harness² is a real 2026 Google-affiliated paper and repo on recursive harness self-improvement, with up to +11.5 points on WorkBuddy-Bench.
-> **Project:** AI workstation  ·  **Updated:** 2026-10-27
+> **Project:** AI workstation  ·  **Updated:** 2026-11-16
 
 ## Is there a specific, real research concept or project called "harness" or "harness2" style self-improvement?
 

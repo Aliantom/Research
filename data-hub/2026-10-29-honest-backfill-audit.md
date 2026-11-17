@@ -3,7 +3,7 @@
 # Honest backfill audit (2026-10-29)
 
 > **TL;DR:** Only raw prices with a splits/dividends table, SEC EDGAR by acceptance time and FRED ALFRED vintages can be backfilled honestly; news, social and options history cannot.
-> **Source:** quant-skeptic audit (Sonnet, read-only) in a live Claude Code session, 2026-10-29; owner approved a ~2-year point-in-time backfill for data-hub  ·  **Project:** data-hub  ·  **Updated:** 2026-10-31
+> **Source:** quant-skeptic audit (Sonnet, read-only) in a live Claude Code session, 2026-10-29; owner approved a ~2-year point-in-time backfill for data-hub  ·  **Project:** data-hub  ·  **Updated:** 2026-11-16
 
 Labels: VERIFIED = read in code or hub.db; REASONED = follows from verified facts; ASSUMED = vendor knowledge, a worker
 must confirm before relying on it. Spec for the backfill slices on Paperclip (Night shift project).

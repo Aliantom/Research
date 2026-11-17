@@ -3,7 +3,7 @@
 # Trading methods ranked for a $1.2k AI/semis account
 
 > **TL;DR:** No method in the 27-card library has proven edge at $1.2k; best bets are AI/semis rotation and trend/regime overlays (both bias-prone); premium selling, LEAPS, pairs and the wheel fail.
-> **Source:** trading-lab method cards knowledge/methods/*.yaml, backtests/summary.md, time_of_day.yaml, arena/registry.yaml (overnight 2026-10-28)  ·  **Project:** Trading brain  ·  **Updated:** 2026-10-29
+> **Source:** trading-lab method cards knowledge/methods/*.yaml, backtests/summary.md, time_of_day.yaml, arena/registry.yaml (overnight 2026-10-28)  ·  **Project:** Trading brain  ·  **Updated:** 2026-11-16
 
 Library: 29 method cards (27 in the main ranking, 2 in "Added later" below) from trading-lab overnight 2026-10-28 (see 2026-10-28 Overnight trading lab prompt and Trading brain brief). One note per method is in `methods/`.
 
