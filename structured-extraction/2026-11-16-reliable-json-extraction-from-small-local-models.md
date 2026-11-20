@@ -3,7 +3,7 @@
 # Reliable JSON extraction from small local models
 
 > **TL;DR:** Constrained decoding fixes JSON validity but can cost accuracy on small models; best-supported recipe: free-text answer first, then a constrained packaging call, schema in prompt, validator, one retry
-> **Source:** research-lane weekly run 2026-11-16; question: best-evidenced way to get reliable JSON extraction from a 4-12B local model (constrained decoding vs retry-with-validation vs verifier)  ·  **Project:** schema-correction  ·  **Updated:** 2026-11-16
+> **Source:** research-lane weekly run 2026-11-16; question: best-evidenced way to get reliable JSON extraction from a 4-12B local model (constrained decoding vs retry-with-validation vs verifier)  ·  **Project:** 2026-10-24 Schema correction results and controls  ·  **Updated:** 2026-11-20
 
 **Question.** For a 4-12B model on a single RTX 3080 10 GB / 16 GB RAM workstation, served through Ollama or llama.cpp, what gets reliable structured (JSON) extraction: grammar or schema-constrained decoding, retry-with-validation, or a verifier pass? What does each cost in accuracy and latency?
 
