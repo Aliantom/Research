@@ -46,6 +46,10 @@ Research notes, one folder per topic. Each line below is a note and its one-line
 
 - [Honest backfill audit (2026-10-29)](data-hub/2026-10-29-honest-backfill-audit.md): Only raw prices with a splits/dividends table, SEC EDGAR by acceptance time and FRED ALFRED vintages can be backfilled honestly; news, social and options history cannot.
 
+## finetune-stability
+
+- [QLoRA stability checklist for a 3-4B model on a 10 GB GPU](finetune-stability/2026-11-22-qlora-stability-checklist-for-a-3-4b-model-on-a-10-gb-gpu.md): Best-supported QLoRA practice: LoRA on all linear layers, any rank 16-64, sweep learning rate (1e-4 to 2e-4 typical, lower at high rank), small clean data, 3+ seeds with paired tests; early-stopping evidence is thin.
+
 ## Google ADK harness and loop courses
 
 - [Video 1 transcript (harness + self-evolving agents)](google-adk-harness-and-loop-courses/video-1-transcript-harness-self-evolving-agents.md): Raw Whisper transcript of the 97-minute compilation: Google's AI harness crash course, then the Agent 102 self-evolving agent livestream.
