@@ -48,7 +48,7 @@ Research notes, one folder per topic. Each line below is a note and its one-line
 
 ## finetune-stability
 
-- [QLoRA stability checklist for a 3-4B model on a 10 GB GPU](finetune-stability/2026-11-22-qlora-stability-checklist-for-a-3-4b-model-on-a-10-gb-gpu.md): Best-supported QLoRA practice: LoRA on all linear layers, any rank 16-64, sweep learning rate (1e-4 to 2e-4 typical, lower at high rank), small clean data, 3+ seeds with paired tests; early-stopping evidence is thin.
+- [QLoRA stability checklist for a 3-4B model on a 10 GB GPU](finetune-stability/2026-11-22-qlora-stability-checklist-for-a-3-4b-model-on-a-10-gb-gpu.md): Best-supported QLoRA practice: LoRA on all linear layers, rank 16-64, sweep LR (1e-4 to 2e-4, lower at high rank), small clean data, 3+ seeds with paired tests; early-stopping evidence is thin.
 
 ## Google ADK harness and loop courses
 
@@ -107,7 +107,7 @@ Research notes, one folder per topic. Each line below is a note and its one-line
 - [Reaching site-foundry leads with no phone and no email](site-foundry/2026-10-29-reaching-leads-without-phone-or-email.md): For leads with no phone or email: walk-ins first, then a manual Facebook/Instagram message, then a hand-mailed postcard with a QR code; skip texts, scraped emails and contact-finder tools.
 - [Outreach compliance for site-foundry (DC, Maryland, Virginia)](site-foundry/2026-11-02-outreach-compliance.md): Manual cold email works with CAN-SPAM fixes and a suppression list; cold calls need DNC scrubbing and Virginia rules; skip cold SMS; Google Places terms bar storing its data. Not legal advice.
 - [Reaching no-website, no-email leads without phone calls](site-foundry/2026-11-03-reaching-no-website-leads-without-phone.md): Best no-phone route for the 13 phone-only Annapolis leads: a personalized first-class postcard with a per-lead QR link (about $12 for 13) plus a walk-in; no channel has solid response-rate data.
-- [Apple's web design, measured and independently checked](site-foundry/2026-11-21-apple-website-design-measured.md): Apple's site is built from a tight type scale, big whitespace, one pill button and video/JS scroll motion that costs 1.7 to 10 MB per page; a local-business site should copy the discipline and the accessibility floor, not the weight, the scrollytelling or the font.
+- [Apple's web design, measured and independently checked](site-foundry/2026-11-21-apple-website-design-measured.md): Apple's site uses a tight type scale, whitespace, one pill button and scroll video/JS costing 1.7-10 MB a page; local sites should copy the discipline and accessibility, not the weight or font.
 
 ## structured-extraction
 
@@ -117,7 +117,7 @@ Research notes, one folder per topic. Each line below is a note and its one-line
 
 - [Trading methods ranked for a $1.2k AI/semis account](trading/00-index.md): No method in the 27-card library has proven edge at $1.2k; best bets are AI/semis rotation and trend/regime overlays (both bias-prone); premium selling, LEAPS, pairs and the wheel fail.
 - [ThetaData Options Value: does it give 1-minute bid/ask on expired contracts?](trading/2026-11-03-thetadata-value-tier-expired-1-minute-quotes-check.md): ThetaData docs list 1-minute NBBO option quotes under Value, but none says Value serves expired contracts back to 2020; email support once, then buy one month and test SPY 2020-03-20 250C.
-- [Data sources after the ThetaData cancellation](trading/2026-11-21-data-sources-after-the-thetadata-cancellation.md): Keep the self-logged broker chain archive as the options source (enough for forward walk-forward; already in the nightly backup), do not buy another options vendor, and add three free point-in-time feeds: company IR RSS for confirmed earnings dates, SEC companyfacts for fundamentals, and (trial) broker-API news; the vendor's own agreement says to delete its data within 30 days of ending the subscription.
+- [Data sources after the ThetaData cancellation](trading/2026-11-21-data-sources-after-the-thetadata-cancellation.md): Keep the self-logged broker chain archive as the options source, buy no new vendor; add free feeds (IR RSS earnings dates, SEC companyfacts, trial broker news); delete ThetaData data within 30 days.
 - [AI supply-chain lead-lag (TSMC revenue, hyperscaler capex, DRAM pricing, Asian session)](trading/methods/ai-supply-chain-lead-lag.md): Plausible but unproven, and likely priced in on the most-watched stocks; a free Asian-session test is cheap, but this is not a tradable edge yet.
 - [Butterflies, OPEX pinning and dealer gamma (GEX)](trading/methods/butterflies-pinning.md): Cheap lottery at best: the pinning evidence ends in 2002, fees take a big bite of a $20-60 debit, and nothing supports single-name AI stocks.
 - [Calendars and diagonals (term-structure and earnings calendars)](trading/methods/calendars-diagonals.md): Affordable at $100-$400 per position, but there is no direct evidence on calendar P&L and the post-earnings IV collapse hits both legs, so paper-only until term-structure data exists.

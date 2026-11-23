@@ -2,8 +2,8 @@
 
 # QLoRA stability checklist for a 3-4B model on a 10 GB GPU
 
-> **TL;DR:** Best-supported QLoRA practice: LoRA on all linear layers, any rank 16-64, sweep learning rate (1e-4 to 2e-4 typical, lower at high rank), small clean data, 3+ seeds with paired tests; early-stopping evidence is thin.
-> **Source:** research-lane weekly run 2026-11-22; question: data-quality and training-stability practices for QLoRA on a 3-4B base model on one 10 GB GPU  ·  **Project:** finetune-lab  ·  **Updated:** 2026-11-22
+> **TL;DR:** Best-supported QLoRA practice: LoRA on all linear layers, rank 16-64, sweep LR (1e-4 to 2e-4, lower at high rank), small clean data, 3+ seeds with paired tests; early-stopping evidence is thin.
+> **Source:** research-lane weekly run 2026-11-22; question: data-quality and training-stability practices for QLoRA on a 3-4B base model on one 10 GB GPU  ·  **Project:** evolve-lab  ·  **Updated:** 2026-11-23
 
 Question: for a 3-4B base model fine-tuned with QLoRA on a single 10 GB GPU, which data-quality and training-stability practices have the strongest published support? Useful here means: it changes a decision in a pre-registered fine-tune ladder, and it costs no more than a few extra short runs on a single RTX 3080 10 GB / 16 GB RAM workstation.
 

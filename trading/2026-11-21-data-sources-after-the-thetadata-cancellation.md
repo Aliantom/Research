@@ -2,8 +2,8 @@
 
 # Data sources after the ThetaData cancellation
 
-> **TL;DR:** Keep the self-logged broker chain archive as the options source (enough for forward walk-forward; already in the nightly backup), do not buy another options vendor, and add three free point-in-time feeds: company IR RSS for confirmed earnings dates, SEC companyfacts for fundamentals, and (trial) broker-API news; the vendor's own agreement says to delete its data within 30 days of ending the subscription.
-> **Source:** Scout task 2026-11-21: best free or cheap point-in-time data for the trading research and paper arena once the paid options-history subscription is cancelled (about 2026-12-10)  ·  **Project:** Trading brain  ·  **Updated:** 2026-11-21
+> **TL;DR:** Keep the self-logged broker chain archive as the options source, buy no new vendor; add free feeds (IR RSS earnings dates, SEC companyfacts, trial broker news); delete ThetaData data within 30 days.
+> **Source:** Scout task 2026-11-21: best free or cheap point-in-time data for the trading research and paper arena once the paid options-history subscription is cancelled (about 2026-12-10)  ·  **Project:** Trading brain  ·  **Updated:** 2026-11-23
 
 All pages fetched 2026-11-21. Nothing was signed up for, no credentials or keys were used, no site was scraped. Only public docs, public feeds and one public read-only database API were read. Local counts come from read-only copies of the arena's own files.
 

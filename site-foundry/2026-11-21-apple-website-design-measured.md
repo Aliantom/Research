@@ -2,8 +2,8 @@
 
 # Apple's web design, measured and independently checked
 
-> **TL;DR:** Apple's site is built from a tight type scale, big whitespace, one pill button and video/JS scroll motion that costs 1.7 to 10 MB per page; a local-business site should copy the discipline and the accessibility floor, not the weight, the scrollytelling or the font.
-> **Source:** Owner request 2026-11-21: hard research into Apple's website design principles and interactivity, to use as a guideline for local-business sites  ·  **Project:** site-foundry  ·  **Updated:** 2026-11-21
+> **TL;DR:** Apple's site uses a tight type scale, whitespace, one pill button and scroll video/JS costing 1.7-10 MB a page; local sites should copy the discipline and accessibility, not the weight or font.
+> **Source:** Owner request 2026-11-21: hard research into Apple's website design principles and interactivity, to use as a guideline for local-business sites  ·  **Project:** site-foundry  ·  **Updated:** 2026-11-23
 
 Date: 2026-11-21. Evidence labels: **VERIFIED** (I measured or read it this session), **REASONED** (follows from verified facts), **ASSUMED** (not checked). Web-page text read through a summarizing fetch tool is marked SUMMARY; check wording before quoting it. Not legal advice.
 
